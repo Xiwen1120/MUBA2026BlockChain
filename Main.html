@@ -1,945 +1,958 @@
-<!DOCTYPE html>
-<html lang="en">
+<!-Team Git Pull -->
+    <!- Project Name: Thetanuts Analytics Financial -->
 
-<head>
-    <meta charset="UTF-8">
-    <title>Vault // live on-chain reader + P&L model</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
-    <style>
-        :root {
-            --bg: #0B0E0D;
-            --card: #141813;
-            --card2: #191E17;
-            --line: #262E22;
-            --line2: #333D2C;
-            --ink: #EAF3DE;
-            --ink2: #9CA997;
-            --ink3: #6B7565;
-            --lime: #97C459;
-            --limed: #639922;
-            --limel: #C0DD97;
-            --coral: #F0997B;
-            --red: #F09595;
-            --mono: 'SF Mono', 'Berkeley Mono', 'Courier New', monospace;
-            --sans: 'Inter', -apple-system, sans-serif;
-        }
+        <!DOCTYPE html>
+        <html lang="en">
 
-        * {
-            box-sizing: border-box;
-        }
+        <head>
+            <meta charset="UTF-8">
+            <title>Vault // live on-chain reader + P&L model</title>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
+            <style>
+                :root {
+                    --bg: #0B0E0D;
+                    --card: #141813;
+                    --card2: #191E17;
+                    --line: #262E22;
+                    --line2: #333D2C;
+                    --ink: #EAF3DE;
+                    --ink2: #9CA997;
+                    --ink3: #6B7565;
+                    --lime: #97C459;
+                    --limed: #639922;
+                    --limel: #C0DD97;
+                    --coral: #F0997B;
+                    --red: #F09595;
+                    --mono: 'SF Mono', 'Berkeley Mono', 'Courier New', monospace;
+                    --sans: 'Inter', -apple-system, sans-serif;
+                }
 
-        body {
-            margin: 0;
-            background: var(--bg);
-            color: var(--ink);
-            font-family: var(--sans);
-        }
+                * {
+                    box-sizing: border-box;
+                }
 
-        .wrap {
-            max-width: 920px;
-            margin: 0 auto;
-            padding: 28px 20px 60px;
-        }
+                body {
+                    margin: 0;
+                    background: var(--bg);
+                    color: var(--ink);
+                    font-family: var(--sans);
+                }
 
-        .top {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            border-bottom: 1px solid var(--line);
-            padding-bottom: 18px;
-            margin-bottom: 22px;
-        }
+                .wrap {
+                    max-width: 920px;
+                    margin: 0 auto;
+                    padding: 28px 20px 60px;
+                }
 
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
+                .top {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: flex-start;
+                    border-bottom: 1px solid var(--line);
+                    padding-bottom: 18px;
+                    margin-bottom: 22px;
+                }
 
-        .mark {
-            width: 30px;
-            height: 30px;
-            border-radius: 7px;
-            background: var(--lime);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #0B0E0D;
-            font-weight: 700;
-            font-family: var(--mono);
-            font-size: 14px;
-        }
+                .brand {
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                }
 
-        .brand h1 {
-            font-size: 15px;
-            font-weight: 600;
-            margin: 0;
-        }
+                .mark {
+                    width: 30px;
+                    height: 30px;
+                    border-radius: 7px;
+                    background: var(--lime);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    color: #0B0E0D;
+                    font-weight: 700;
+                    font-family: var(--mono);
+                    font-size: 14px;
+                }
 
-        .brand span {
-            font-family: var(--mono);
-            font-size: 11px;
-            color: var(--ink3);
-            display: block;
-            margin-top: 2px;
-        }
+                .brand h1 {
+                    font-size: 15px;
+                    font-weight: 600;
+                    margin: 0;
+                }
 
-        .warn {
-            background: #1A1712;
-            border: 1px solid #4A2F1D;
-            border-radius: 8px;
-            padding: 12px 14px;
-            font-size: 12px;
-            color: var(--coral);
-            line-height: 1.6;
-            margin-bottom: 22px;
-        }
+                .brand span {
+                    font-family: var(--mono);
+                    font-size: 11px;
+                    color: var(--ink3);
+                    display: block;
+                    margin-top: 2px;
+                }
 
-        .section-label {
-            font-family: var(--mono);
-            font-size: 11px;
-            color: var(--ink3);
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            margin: 0 0 12px;
-        }
+                .warn {
+                    background: #1A1712;
+                    border: 1px solid #4A2F1D;
+                    border-radius: 8px;
+                    padding: 12px 14px;
+                    font-size: 12px;
+                    color: var(--coral);
+                    line-height: 1.6;
+                    margin-bottom: 22px;
+                }
 
-        .connectbar {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 18px;
-            flex-wrap: wrap;
-        }
+                .section-label {
+                    font-family: var(--mono);
+                    font-size: 11px;
+                    color: var(--ink3);
+                    text-transform: uppercase;
+                    letter-spacing: 1.5px;
+                    margin: 0 0 12px;
+                }
 
-        button {
-            font-family: var(--sans);
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            border-radius: 8px;
-            padding: 10px 18px;
-            border: 1px solid var(--line2);
-            background: var(--card2);
-            color: var(--ink);
-        }
+                .connectbar {
+                    display: flex;
+                    align-items: center;
+                    gap: 12px;
+                    margin-bottom: 18px;
+                    flex-wrap: wrap;
+                }
 
-        button:hover {
-            border-color: var(--lime);
-            color: var(--limel);
-        }
+                button {
+                    font-family: var(--sans);
+                    font-size: 13px;
+                    font-weight: 600;
+                    cursor: pointer;
+                    border-radius: 8px;
+                    padding: 10px 18px;
+                    border: 1px solid var(--line2);
+                    background: var(--card2);
+                    color: var(--ink);
+                }
 
-        button.primary {
-            background: var(--lime);
-            color: #0B0E0D;
-            border-color: var(--lime);
-        }
+                button:hover {
+                    border-color: var(--lime);
+                    color: var(--limel);
+                }
 
-        button.primary:hover {
-            background: var(--limel);
-        }
+                button.primary {
+                    background: var(--lime);
+                    color: #0B0E0D;
+                    border-color: var(--lime);
+                }
 
-        button:disabled {
-            opacity: .4;
-            cursor: not-allowed;
-        }
+                button.primary:hover {
+                    background: var(--limel);
+                }
 
-        .status {
-            font-family: var(--mono);
-            font-size: 11px;
-            color: var(--ink3);
-        }
+                button:disabled {
+                    opacity: .4;
+                    cursor: not-allowed;
+                }
 
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
-            margin-bottom: 26px;
-        }
+                .status {
+                    font-family: var(--mono);
+                    font-size: 11px;
+                    color: var(--ink3);
+                }
 
-        .stat {
-            background: var(--card2);
-            border-radius: 8px;
-            padding: 12px 14px;
-            min-height: 60px;
-        }
+                .grid {
+                    display: grid;
+                    grid-template-columns: repeat(4, 1fr);
+                    gap: 10px;
+                    margin-bottom: 26px;
+                }
 
-        .stat .l {
-            font-family: var(--mono);
-            font-size: 10px;
-            color: var(--ink3);
-            text-transform: uppercase;
-            letter-spacing: .5px;
-        }
+                .stat {
+                    background: var(--card2);
+                    border-radius: 8px;
+                    padding: 12px 14px;
+                    min-height: 60px;
+                }
 
-        .stat .v {
-            font-size: 15px;
-            font-weight: 600;
-            margin-top: 6px;
-            font-family: var(--mono);
-            word-break: break-all;
-        }
+                .stat .l {
+                    font-family: var(--mono);
+                    font-size: 10px;
+                    color: var(--ink3);
+                    text-transform: uppercase;
+                    letter-spacing: .5px;
+                }
 
-        .ledger {
-            background: var(--card);
-            border: 1px solid var(--line);
-            border-radius: 10px;
-            padding: 2px 16px;
-            margin-bottom: 28px;
-            font-family: var(--mono);
-            font-size: 12px;
-        }
+                .stat .v {
+                    font-size: 15px;
+                    font-weight: 600;
+                    margin-top: 6px;
+                    font-family: var(--mono);
+                    word-break: break-all;
+                }
 
-        .ledger .row {
-            display: flex;
-            justify-content: space-between;
-            gap: 10px;
-            padding: 10px 0;
-            border-bottom: 1px solid var(--line);
-        }
+                .ledger {
+                    background: var(--card);
+                    border: 1px solid var(--line);
+                    border-radius: 10px;
+                    padding: 2px 16px;
+                    margin-bottom: 28px;
+                    font-family: var(--mono);
+                    font-size: 12px;
+                }
 
-        .ledger .row:last-child {
-            border-bottom: none;
-        }
+                .ledger .row {
+                    display: flex;
+                    justify-content: space-between;
+                    gap: 10px;
+                    padding: 10px 0;
+                    border-bottom: 1px solid var(--line);
+                }
 
-        .ledger .k {
-            color: var(--ink3);
-            white-space: nowrap;
-        }
+                .ledger .row:last-child {
+                    border-bottom: none;
+                }
 
-        .ledger .v {
-            color: var(--limel);
-            text-align: right;
-            word-break: break-all;
-        }
+                .ledger .k {
+                    color: var(--ink3);
+                    white-space: nowrap;
+                }
 
-        .ledger .v.plain {
-            color: var(--ink);
-        }
+                .ledger .v {
+                    color: var(--limel);
+                    text-align: right;
+                    word-break: break-all;
+                }
 
-        .model {
-            background: var(--card);
-            border: 1px solid var(--line);
-            border-radius: 12px;
-            padding: 20px;
-        }
+                .ledger .v.plain {
+                    color: var(--ink);
+                }
 
-        .row2 {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px 24px;
-            margin-bottom: 18px;
-        }
+                .model {
+                    background: var(--card);
+                    border: 1px solid var(--line);
+                    border-radius: 12px;
+                    padding: 20px;
+                }
 
-        .field label {
-            display: block;
-            font-family: var(--mono);
-            font-size: 11px;
-            color: var(--ink3);
-            text-transform: uppercase;
-            letter-spacing: .5px;
-            margin-bottom: 8px;
-        }
+                .row2 {
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 20px 24px;
+                    margin-bottom: 18px;
+                }
 
-        .field .valline {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 6px;
-        }
+                .field label {
+                    display: block;
+                    font-family: var(--mono);
+                    font-size: 11px;
+                    color: var(--ink3);
+                    text-transform: uppercase;
+                    letter-spacing: .5px;
+                    margin-bottom: 8px;
+                }
 
-        .field .valline .num {
-            font-family: var(--mono);
-            font-size: 13px;
-            color: var(--limel);
-        }
+                .field .valline {
+                    display: flex;
+                    justify-content: space-between;
+                    margin-bottom: 6px;
+                }
 
-        input[type=range] {
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            appearance: none;
-            width: 100%;
-            height: 3px;
-            background: var(--line2);
-            border-radius: 2px;
-            outline: none;
-        }
+                .field .valline .num {
+                    font-family: var(--mono);
+                    font-size: 13px;
+                    color: var(--limel);
+                }
 
-        input[type=range]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 14px;
-            height: 14px;
-            border-radius: 50%;
-            background: var(--lime);
-            cursor: pointer;
-            border: 2px solid #0B0E0D;
-        }
+                input[type=range] {
+                    -webkit-appearance: none;
+                    -moz-appearance: none;
+                    appearance: none;
+                    width: 100%;
+                    height: 3px;
+                    background: var(--line2);
+                    border-radius: 2px;
+                    outline: none;
+                }
 
-        input[type=range]::-moz-range-thumb {
-            width: 14px;
-            height: 14px;
-            border-radius: 50%;
-            background: var(--lime);
-            cursor: pointer;
-            border: 2px solid #0B0E0D;
-        }
+                input[type=range]::-webkit-slider-thumb {
+                    -webkit-appearance: none;
+                    appearance: none;
+                    width: 14px;
+                    height: 14px;
+                    border-radius: 50%;
+                    background: var(--lime);
+                    cursor: pointer;
+                    border: 2px solid #0B0E0D;
+                }
 
-        input[type=range]::-moz-range-track {
-            height: 3px;
-            background: var(--line2);
-            border-radius: 2px;
-            border: none;
-        }
+                input[type=range]::-moz-range-thumb {
+                    width: 14px;
+                    height: 14px;
+                    border-radius: 50%;
+                    background: var(--lime);
+                    cursor: pointer;
+                    border: 2px solid #0B0E0D;
+                }
 
-        select {
-            width: 100%;
-            background: var(--card2);
-            color: var(--ink);
-            border: 1px solid var(--line2);
-            border-radius: 6px;
-            padding: 8px 10px;
-            font-family: var(--mono);
-            font-size: 12px;
-        }
+                input[type=range]::-moz-range-track {
+                    height: 3px;
+                    background: var(--line2);
+                    border-radius: 2px;
+                    border: none;
+                }
 
-        .stats2 {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
-            margin: 20px 0;
-        }
+                select {
+                    width: 100%;
+                    background: var(--card2);
+                    color: var(--ink);
+                    border: 1px solid var(--line2);
+                    border-radius: 6px;
+                    padding: 8px 10px;
+                    font-family: var(--mono);
+                    font-size: 12px;
+                }
 
-        .stat2 {
-            background: var(--card2);
-            border-radius: 8px;
-            padding: 12px 14px;
-        }
+                .stats2 {
+                    display: grid;
+                    grid-template-columns: repeat(4, 1fr);
+                    gap: 10px;
+                    margin: 20px 0;
+                }
 
-        .stat2 .l {
-            font-family: var(--mono);
-            font-size: 10px;
-            color: var(--ink3);
-            text-transform: uppercase;
-            letter-spacing: .5px;
-        }
+                .stat2 {
+                    background: var(--card2);
+                    border-radius: 8px;
+                    padding: 12px 14px;
+                }
 
-        .stat2 .v {
-            font-size: 19px;
-            font-weight: 600;
-            margin-top: 5px;
-            font-family: var(--mono);
-        }
+                .stat2 .l {
+                    font-family: var(--mono);
+                    font-size: 10px;
+                    color: var(--ink3);
+                    text-transform: uppercase;
+                    letter-spacing: .5px;
+                }
 
-        .v.pos {
-            color: var(--lime);
-        }
+                .stat2 .v {
+                    font-size: 19px;
+                    font-weight: 600;
+                    margin-top: 5px;
+                    font-family: var(--mono);
+                }
 
-        .v.neg {
-            color: var(--red);
-        }
+                .v.pos {
+                    color: var(--lime);
+                }
 
-        .chartbox {
-            position: relative;
-            height: 180px;
-            margin-top: 6px;
-        }
+                .v.neg {
+                    color: var(--red);
+                }
 
-        svg {
-            width: 100%;
-            height: 100%;
-            overflow: visible;
-        }
+                .chartbox {
+                    position: relative;
+                    height: 180px;
+                    margin-top: 6px;
+                }
 
-        .foot {
-            margin-top: 22px;
-            padding-top: 16px;
-            border-top: 1px solid var(--line);
-            font-size: 11px;
-            color: var(--ink3);
-            font-family: var(--mono);
-            line-height: 1.7;
-        }
+                svg {
+                    width: 100%;
+                    height: 100%;
+                    overflow: visible;
+                }
 
-        @media(max-width:640px) {
+                .foot {
+                    margin-top: 22px;
+                    padding-top: 16px;
+                    border-top: 1px solid var(--line);
+                    font-size: 11px;
+                    color: var(--ink3);
+                    font-family: var(--mono);
+                    line-height: 1.7;
+                }
 
-            .grid,
-            .stats2 {
-                grid-template-columns: repeat(2, 1fr);
-            }
+                @media(max-width:640px) {
 
-            .row2 {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
-</head>
+                    .grid,
+                    .stats2 {
+                        grid-template-columns: repeat(2, 1fr);
+                    }
 
-<body>
-    <div class="wrap">
+                    .row2 {
+                        grid-template-columns: 1fr;
+                    }
+                }
+            </style>
+        </head>
 
-        <div class="top">
-            <div class="brand">
-                <div class="mark">θ</div>
-                <div>
-                    <h1>on-chain reader // vault sim</h1>
-                    <span>real wallet + real chain data &rarr; original P&amp;L model</span>
+        <body>
+            <div class="wrap">
+
+                <div class="top">
+                    <div class="brand">
+                        <div class="mark">θ</div>
+                        <div>
+                            <h1>on-chain reader // vault sim</h1>
+                            <span>real wallet + real chain data &rarr; original P&amp;L model</span>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
 
-        <div class="warn">
-            Real, read-only blockchain data below — no trades are executed and no funds move. Thetanuts Finance has had
-            two
-            disclosed exploits (Apr 2026, Jun 2026) and currently shows very low TVL on-chain, so this demo reads their
-            public token contract for verification purposes only.
-        </div>
-
-        <p class="section-label">01 &middot; connect &amp; read live chain data</p>
-        <div class="connectbar">
-            <button class="primary" id="connectbtn">Connect wallet</button>
-            <button id="customaddrbtn">Enter wallet address</button>
-            <button id="refreshbtn" disabled>Refresh data</button>
-            <span class="status" id="statustext">initializing public RPC connection…</span>
-        </div>
-
-        <div class="grid">
-            <div class="stat">
-                <div class="l">Network</div>
-                <div class="v" id="s-net">—</div>
-            </div>
-            <div class="stat">
-                <div class="l">Block number</div>
-                <div class="v" id="s-block">—</div>
-            </div>
-            <div class="stat">
-                <div class="l">Gas price</div>
-                <div class="v" id="s-gas">—</div>
-            </div>
-            <div class="stat">
-                <div class="l">Wallet ETH balance</div>
-                <div class="v" id="s-bal">—</div>
-            </div>
-        </div>
-
-        <div class="ledger">
-            <div class="row"><span class="k">connected address</span><span class="v" id="lg-addr">—</span></div>
-            <div class="row"><span class="k">NUTS token contract</span><span class="v"
-                    id="lg-tokenaddr">0x23f3d462...6015c0c9b</span></div>
-            <div class="row"><span class="k">NUTS name / symbol</span><span class="v plain" id="lg-tokenmeta">—</span>
-            </div>
-            <div class="row"><span class="k">NUTS total supply</span><span class="v plain" id="lg-supply">—</span></div>
-            <div class="row"><span class="k">your NUTS balance</span><span class="v plain" id="lg-mybal">—</span></div>
-        </div>
-
-        <p class="section-label">02 &middot; financial model — position P&amp;L (connected to live option book)</p>
-        <div class="model">
-            <div class="row2" style="margin-bottom: 14px;">
-                <div class="field" style="grid-column: 1 / -1;">
-                    <label>Select Live Option Book Contract (Thetanuts &amp; Crypto Option Feed)</label>
-                    <select id="optcontract">
-                        <option value="custom">-- Custom Manual Sliders --</option>
-                        <option value="loading" disabled>Loading live option book contracts…</option>
-                    </select>
+                <div class="warn">
+                    Real, read-only blockchain data below — no trades are executed and no funds move. Thetanuts Finance
+                    has had
+                    two
+                    disclosed exploits (Apr 2026, Jun 2026) and currently shows very low TVL on-chain, so this demo
+                    reads their
+                    public token contract for verification purposes only.
                 </div>
-            </div>
-            <div class="row2">
-                <div class="field">
-                    <label>Option type</label>
-                    <select id="opttype">
-                        <option value="call">Call</option>
-                        <option value="put">Put</option>
-                    </select>
+
+                <p class="section-label">01 &middot; connect &amp; read live chain data</p>
+                <div class="connectbar">
+                    <button class="primary" id="connectbtn">Connect wallet</button>
+                    <button id="customaddrbtn">Enter wallet address</button>
+                    <button id="refreshbtn" disabled>Refresh data</button>
+                    <span class="status" id="statustext">initializing public RPC connection…</span>
                 </div>
-                <div class="field">
-                    <label>Underlying</label>
-                    <select id="underlying">
-                        <option value="3200">ETH &middot; spot $3,200</option>
-                        <option value="63000">BTC &middot; spot $63,000</option>
-                        <option value="1">USDe &middot; spot $1.00</option>
-                    </select>
+
+                <div class="grid">
+                    <div class="stat">
+                        <div class="l">Network</div>
+                        <div class="v" id="s-net">—</div>
+                    </div>
+                    <div class="stat">
+                        <div class="l">Block number</div>
+                        <div class="v" id="s-block">—</div>
+                    </div>
+                    <div class="stat">
+                        <div class="l">Gas price</div>
+                        <div class="v" id="s-gas">—</div>
+                    </div>
+                    <div class="stat">
+                        <div class="l">Wallet ETH balance</div>
+                        <div class="v" id="s-bal">—</div>
+                    </div>
                 </div>
-            </div>
-            <div class="row2">
-                <div class="field">
-                    <div class="valline"><label style="margin:0;">Strike price</label><span class="num"
-                            id="strikeout">$3,392</span></div>
-                    <input type="range" id="strike" min="50" max="150" value="106" step="1">
+
+                <div class="ledger">
+                    <div class="row"><span class="k">connected address</span><span class="v" id="lg-addr">—</span></div>
+                    <div class="row"><span class="k">NUTS token contract</span><span class="v"
+                            id="lg-tokenaddr">0x23f3d462...6015c0c9b</span></div>
+                    <div class="row"><span class="k">NUTS name / symbol</span><span class="v plain"
+                            id="lg-tokenmeta">—</span>
+                    </div>
+                    <div class="row"><span class="k">NUTS total supply</span><span class="v plain"
+                            id="lg-supply">—</span></div>
+                    <div class="row"><span class="k">your NUTS balance</span><span class="v plain"
+                            id="lg-mybal">—</span></div>
                 </div>
-                <div class="field">
-                    <div class="valline"><label style="margin:0;">Premium paid</label><span class="num"
-                            id="premout">$42</span></div>
-                    <input type="range" id="prem" min="5" max="300" value="42" step="1">
+
+                <p class="section-label">02 &middot; financial model — position P&amp;L (connected to live option book)
+                </p>
+                <div class="model">
+                    <div class="row2" style="margin-bottom: 14px;">
+                        <div class="field" style="grid-column: 1 / -1;">
+                            <label>Select Live Option Book Contract (Thetanuts &amp; Crypto Option Feed)</label>
+                            <select id="optcontract">
+                                <option value="custom">-- Custom Manual Sliders --</option>
+                                <option value="loading" disabled>Loading live option book contracts…</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row2">
+                        <div class="field">
+                            <label>Option type</label>
+                            <select id="opttype">
+                                <option value="call">Call</option>
+                                <option value="put">Put</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label>Underlying</label>
+                            <select id="underlying">
+                                <option value="3200">ETH &middot; spot $3,200</option>
+                                <option value="63000">BTC &middot; spot $63,000</option>
+                                <option value="1">USDe &middot; spot $1.00</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row2">
+                        <div class="field">
+                            <div class="valline"><label style="margin:0;">Strike price</label><span class="num"
+                                    id="strikeout">$3,392</span></div>
+                            <input type="range" id="strike" min="50" max="150" value="106" step="1">
+                        </div>
+                        <div class="field">
+                            <div class="valline"><label style="margin:0;">Premium paid</label><span class="num"
+                                    id="premout">$42</span></div>
+                            <input type="range" id="prem" min="5" max="300" value="42" step="1">
+                        </div>
+                    </div>
+                    <div class="row2">
+                        <div class="field">
+                            <div class="valline"><label style="margin:0;">Contracts (size)</label><span class="num"
+                                    id="sizeout">1.0</span></div>
+                            <input type="range" id="size" min="0.1" max="5" value="1" step="0.1">
+                        </div>
+                        <div class="field">
+                            <div class="valline"><label style="margin:0;">Gas + fees</label><span class="num"
+                                    id="gasout">$1.80</span></div>
+                            <input type="range" id="gasf" min="0" max="15" value="1.8" step="0.1">
+                        </div>
+                    </div>
+                    <div class="stats2">
+                        <div class="stat2">
+                            <div class="l">Break-even</div>
+                            <div class="v" id="s-be">—</div>
+                        </div>
+                        <div class="stat2">
+                            <div class="l">Max loss</div>
+                            <div class="v neg" id="s-loss">—</div>
+                        </div>
+                        <div class="stat2">
+                            <div class="l">P&amp;L at spot</div>
+                            <div class="v" id="s-pnl">—</div>
+                        </div>
+                        <div class="stat2">
+                            <div class="l">ROI on premium</div>
+                            <div class="v" id="s-roi">—</div>
+                        </div>
+                    </div>
+                    <div class="chartbox"><svg id="pnlchart" viewBox="0 0 600 180" preserveAspectRatio="none"></svg>
+                    </div>
+                    <div class="foot">
+                        section 01 reads live public blockchain data (your wallet, live network state, Thetanuts' real
+                        NUTS
+                        token contract).
+                        section 02 is connected to live option orderbook contracts with real-time strike prices, market
+                        premiums, and payoff calculations.
+                    </div>
                 </div>
-            </div>
-            <div class="row2">
-                <div class="field">
-                    <div class="valline"><label style="margin:0;">Contracts (size)</label><span class="num"
-                            id="sizeout">1.0</span></div>
-                    <input type="range" id="size" min="0.1" max="5" value="1" step="0.1">
+
+                <p class="section-label" style="margin-top: 26px;">03 &middot; live option book quotes &amp; market
+                    depth</p>
+                <div class="grid">
+                    <div class="stat">
+                        <div class="l">Selected Contract</div>
+                        <div class="v" id="ob-contract" style="font-size: 13px; color: var(--lime);">Select a contract
+                        </div>
+                    </div>
+                    <div class="stat">
+                        <div class="l">Live Mark Premium</div>
+                        <div class="v" id="ob-mark">—</div>
+                    </div>
+                    <div class="stat">
+                        <div class="l">Implied Volatility (IV)</div>
+                        <div class="v" id="ob-iv">—</div>
+                    </div>
+                    <div class="stat">
+                        <div class="l">Best Bid / Ask</div>
+                        <div class="v" id="ob-bidask" style="font-size: 13px;">—</div>
+                    </div>
                 </div>
-                <div class="field">
-                    <div class="valline"><label style="margin:0;">Gas + fees</label><span class="num"
-                            id="gasout">$1.80</span></div>
-                    <input type="range" id="gasf" min="0" max="15" value="1.8" step="0.1">
-                </div>
+
             </div>
-            <div class="stats2">
-                <div class="stat2">
-                    <div class="l">Break-even</div>
-                    <div class="v" id="s-be">—</div>
-                </div>
-                <div class="stat2">
-                    <div class="l">Max loss</div>
-                    <div class="v neg" id="s-loss">—</div>
-                </div>
-                <div class="stat2">
-                    <div class="l">P&amp;L at spot</div>
-                    <div class="v" id="s-pnl">—</div>
-                </div>
-                <div class="stat2">
-                    <div class="l">ROI on premium</div>
-                    <div class="v" id="s-roi">—</div>
-                </div>
-            </div>
-            <div class="chartbox"><svg id="pnlchart" viewBox="0 0 600 180" preserveAspectRatio="none"></svg></div>
-            <div class="foot">
-                section 01 reads live public blockchain data (your wallet, live network state, Thetanuts' real NUTS
-                token contract).
-                section 02 is connected to live option orderbook contracts with real-time strike prices, market
-                premiums, and payoff calculations.
-            </div>
-        </div>
 
-        <p class="section-label" style="margin-top: 26px;">03 &middot; live option book quotes &amp; market depth</p>
-        <div class="grid">
-            <div class="stat">
-                <div class="l">Selected Contract</div>
-                <div class="v" id="ob-contract" style="font-size: 13px; color: var(--lime);">Select a contract</div>
-            </div>
-            <div class="stat">
-                <div class="l">Live Mark Premium</div>
-                <div class="v" id="ob-mark">—</div>
-            </div>
-            <div class="stat">
-                <div class="l">Implied Volatility (IV)</div>
-                <div class="v" id="ob-iv">—</div>
-            </div>
-            <div class="stat">
-                <div class="l">Best Bid / Ask</div>
-                <div class="v" id="ob-bidask" style="font-size: 13px;">—</div>
-            </div>
-        </div>
+            <script>
+                (function () {
+                    var connectbtn = document.getElementById('connectbtn');
+                    var customaddrbtn = document.getElementById('customaddrbtn');
+                    var refreshbtn = document.getElementById('refreshbtn');
+                    var statustext = document.getElementById('statustext');
+                    var provider = null, walletSigner = null, address = null, isWalletConnected = false;
 
-    </div>
+                    var RPC_ENDPOINTS = [
+                        'https://ethereum-rpc.publicnode.com',
+                        'https://eth.llamarpc.com',
+                        'https://rpc.ankr.com/eth',
+                        'https://1rpc.io/eth',
+                        'https://cloudflare-eth.com'
+                    ];
+                    var currentRpcIdx = 0;
 
-    <script>
-        (function () {
-            var connectbtn = document.getElementById('connectbtn');
-            var customaddrbtn = document.getElementById('customaddrbtn');
-            var refreshbtn = document.getElementById('refreshbtn');
-            var statustext = document.getElementById('statustext');
-            var provider = null, walletSigner = null, address = null, isWalletConnected = false;
+                    var NUTS_ADDR = '0x23f3d4625aef6f0b84d50db1d53516e6015c0c9b';
+                    var ERC20_ABI = [
+                        'function name() view returns (string)',
+                        'function symbol() view returns (string)',
+                        'function totalSupply() view returns (uint256)',
+                        'function decimals() view returns (uint8)',
+                        'function balanceOf(address) view returns (uint256)'
+                    ];
 
-            var RPC_ENDPOINTS = [
-                'https://ethereum-rpc.publicnode.com',
-                'https://eth.llamarpc.com',
-                'https://rpc.ankr.com/eth',
-                'https://1rpc.io/eth',
-                'https://cloudflare-eth.com'
-            ];
-            var currentRpcIdx = 0;
+                    function fmtNum(n, d) { d = d === undefined ? 2 : d; return Number(n).toLocaleString('en-US', { maximumFractionDigits: d }); }
 
-            var NUTS_ADDR = '0x23f3d4625aef6f0b84d50db1d53516e6015c0c9b';
-            var ERC20_ABI = [
-                'function name() view returns (string)',
-                'function symbol() view returns (string)',
-                'function totalSupply() view returns (uint256)',
-                'function decimals() view returns (uint8)',
-                'function balanceOf(address) view returns (uint256)'
-            ];
+                    var liveOptionData = {};
 
-            function fmtNum(n, d) { d = d === undefined ? 2 : d; return Number(n).toLocaleString('en-US', { maximumFractionDigits: d }); }
+                    function getRpcProvider() {
+                        var url = RPC_ENDPOINTS[currentRpcIdx];
+                        return new ethers.providers.JsonRpcProvider(url);
+                    }
 
-            var liveOptionData = {};
+                    function rotateRpcProvider() {
+                        currentRpcIdx = (currentRpcIdx + 1) % RPC_ENDPOINTS.length;
+                        provider = getRpcProvider();
+                    }
 
-            function getRpcProvider() {
-                var url = RPC_ENDPOINTS[currentRpcIdx];
-                return new ethers.providers.JsonRpcProvider(url);
-            }
+                    async function initAutoConnect() {
+                        statustext.textContent = '● connecting to Ethereum Mainnet public RPC & live option book…';
+                        provider = getRpcProvider();
+                        refreshbtn.disabled = false;
+                        await loadData();
+                        fetchLiveEthPrice();
+                        fetchLiveOptionBook();
+                        // Start live auto-polling every 12 seconds
+                        setInterval(loadData, 12000);
+                    }
 
-            function rotateRpcProvider() {
-                currentRpcIdx = (currentRpcIdx + 1) % RPC_ENDPOINTS.length;
-                provider = getRpcProvider();
-            }
+                    async function fetchLiveOptionBook() {
+                        var selectEl = document.getElementById('optcontract');
+                        try {
+                            var res = await fetch('https://www.deribit.com/api/v2/public/get_book_summary_by_currency?currency=ETH&kind=option');
+                            var json = await res.json();
+                            if (json && json.result && json.result.length > 0) {
+                                selectEl.innerHTML = '<option value="custom">-- Custom Manual Sliders --</option>';
+                                liveOptionData = {};
 
-            async function initAutoConnect() {
-                statustext.textContent = '● connecting to Ethereum Mainnet public RPC & live option book…';
-                provider = getRpcProvider();
-                refreshbtn.disabled = false;
-                await loadData();
-                fetchLiveEthPrice();
-                fetchLiveOptionBook();
-                // Start live auto-polling every 12 seconds
-                setInterval(loadData, 12000);
-            }
+                                var items = json.result.filter(function (item) {
+                                    return item.mark_price > 0 && item.underlying_price > 0;
+                                }).slice(0, 35);
 
-            async function fetchLiveOptionBook() {
-                var selectEl = document.getElementById('optcontract');
-                try {
-                    var res = await fetch('https://www.deribit.com/api/v2/public/get_book_summary_by_currency?currency=ETH&kind=option');
-                    var json = await res.json();
-                    if (json && json.result && json.result.length > 0) {
+                                items.forEach(function (item) {
+                                    var name = item.instrument_name;
+                                    var parts = name.split('-');
+                                    var strike = parseFloat(parts[2]);
+                                    var type = parts[3] === 'C' ? 'call' : 'put';
+                                    var spot = item.underlying_price;
+                                    var markUSD = item.mark_price * spot;
+                                    var bidUSD = (item.bid_price || 0) * spot;
+                                    var askUSD = (item.ask_price || 0) * spot;
+                                    var iv = item.mark_iv ? item.mark_iv.toFixed(1) + '%' : 'N/A';
+
+                                    liveOptionData[name] = {
+                                        name: name,
+                                        type: type,
+                                        strike: strike,
+                                        spot: spot,
+                                        markUSD: markUSD,
+                                        bidUSD: bidUSD,
+                                        askUSD: askUSD,
+                                        iv: iv
+                                    };
+
+                                    var opt = document.createElement('option');
+                                    opt.value = name;
+                                    opt.textContent = '● ' + name + ' · Strike $' + fmtNum(strike, 0) + ' · Mark Premium $' + fmtNum(markUSD, 2) + ' (IV ' + iv + ')';
+                                    selectEl.appendChild(opt);
+                                });
+
+                                if (items.length > 0) {
+                                    selectEl.value = items[0].instrument_name;
+                                    applyOptionContract(items[0].instrument_name);
+                                }
+                            } else {
+                                loadFallbackOptionBook();
+                            }
+                        } catch (e) {
+                            console.log('Option book API fetch fallback used');
+                            loadFallbackOptionBook();
+                        }
+                    }
+
+                    function loadFallbackOptionBook() {
+                        var selectEl = document.getElementById('optcontract');
+                        var fallbackList = [
+                            { name: 'ETH-27SEP26-3400-C', type: 'call', strike: 3400, spot: 3300, markUSD: 48.50, bidUSD: 47.00, askUSD: 50.00, iv: '54.2%' },
+                            { name: 'ETH-27SEP26-3500-C', type: 'call', strike: 3500, spot: 3300, markUSD: 32.10, bidUSD: 31.00, askUSD: 33.50, iv: '52.8%' },
+                            { name: 'ETH-27SEP26-3200-P', type: 'put', strike: 3200, spot: 3300, markUSD: 41.20, bidUSD: 39.80, askUSD: 42.50, iv: '56.1%' },
+                            { name: 'ETH-27SEP26-3100-P', type: 'put', strike: 3100, spot: 3300, markUSD: 25.80, bidUSD: 24.50, askUSD: 27.00, iv: '58.4%' }
+                        ];
                         selectEl.innerHTML = '<option value="custom">-- Custom Manual Sliders --</option>';
                         liveOptionData = {};
-
-                        var items = json.result.filter(function (item) {
-                            return item.mark_price > 0 && item.underlying_price > 0;
-                        }).slice(0, 35);
-
-                        items.forEach(function (item) {
-                            var name = item.instrument_name;
-                            var parts = name.split('-');
-                            var strike = parseFloat(parts[2]);
-                            var type = parts[3] === 'C' ? 'call' : 'put';
-                            var spot = item.underlying_price;
-                            var markUSD = item.mark_price * spot;
-                            var bidUSD = (item.bid_price || 0) * spot;
-                            var askUSD = (item.ask_price || 0) * spot;
-                            var iv = item.mark_iv ? item.mark_iv.toFixed(1) + '%' : 'N/A';
-
-                            liveOptionData[name] = {
-                                name: name,
-                                type: type,
-                                strike: strike,
-                                spot: spot,
-                                markUSD: markUSD,
-                                bidUSD: bidUSD,
-                                askUSD: askUSD,
-                                iv: iv
-                            };
-
+                        fallbackList.forEach(function (item) {
+                            liveOptionData[item.name] = item;
                             var opt = document.createElement('option');
-                            opt.value = name;
-                            opt.textContent = '● ' + name + ' · Strike $' + fmtNum(strike, 0) + ' · Mark Premium $' + fmtNum(markUSD, 2) + ' (IV ' + iv + ')';
+                            opt.value = item.name;
+                            opt.textContent = '● ' + item.name + ' · Strike $' + fmtNum(item.strike, 0) + ' · Mark Premium $' + fmtNum(item.markUSD, 2) + ' (IV ' + item.iv + ')';
                             selectEl.appendChild(opt);
                         });
-
-                        if (items.length > 0) {
-                            selectEl.value = items[0].instrument_name;
-                            applyOptionContract(items[0].instrument_name);
-                        }
-                    } else {
-                        loadFallbackOptionBook();
+                        selectEl.value = fallbackList[0].name;
+                        applyOptionContract(fallbackList[0].name);
                     }
-                } catch (e) {
-                    console.log('Option book API fetch fallback used');
-                    loadFallbackOptionBook();
-                }
-            }
 
-            function loadFallbackOptionBook() {
-                var selectEl = document.getElementById('optcontract');
-                var fallbackList = [
-                    { name: 'ETH-27SEP26-3400-C', type: 'call', strike: 3400, spot: 3300, markUSD: 48.50, bidUSD: 47.00, askUSD: 50.00, iv: '54.2%' },
-                    { name: 'ETH-27SEP26-3500-C', type: 'call', strike: 3500, spot: 3300, markUSD: 32.10, bidUSD: 31.00, askUSD: 33.50, iv: '52.8%' },
-                    { name: 'ETH-27SEP26-3200-P', type: 'put', strike: 3200, spot: 3300, markUSD: 41.20, bidUSD: 39.80, askUSD: 42.50, iv: '56.1%' },
-                    { name: 'ETH-27SEP26-3100-P', type: 'put', strike: 3100, spot: 3300, markUSD: 25.80, bidUSD: 24.50, askUSD: 27.00, iv: '58.4%' }
-                ];
-                selectEl.innerHTML = '<option value="custom">-- Custom Manual Sliders --</option>';
-                liveOptionData = {};
-                fallbackList.forEach(function (item) {
-                    liveOptionData[item.name] = item;
-                    var opt = document.createElement('option');
-                    opt.value = item.name;
-                    opt.textContent = '● ' + item.name + ' · Strike $' + fmtNum(item.strike, 0) + ' · Mark Premium $' + fmtNum(item.markUSD, 2) + ' (IV ' + item.iv + ')';
-                    selectEl.appendChild(opt);
-                });
-                selectEl.value = fallbackList[0].name;
-                applyOptionContract(fallbackList[0].name);
-            }
+                    function applyOptionContract(name) {
+                        if (name === 'custom' || !liveOptionData[name]) {
+                            document.getElementById('ob-contract').textContent = 'Custom Manual Simulation';
+                            document.getElementById('ob-mark').textContent = '—';
+                            document.getElementById('ob-iv').textContent = '—';
+                            document.getElementById('ob-bidask').textContent = '—';
+                            return;
+                        }
 
-            function applyOptionContract(name) {
-                if (name === 'custom' || !liveOptionData[name]) {
-                    document.getElementById('ob-contract').textContent = 'Custom Manual Simulation';
-                    document.getElementById('ob-mark').textContent = '—';
-                    document.getElementById('ob-iv').textContent = '—';
-                    document.getElementById('ob-bidask').textContent = '—';
-                    return;
-                }
+                        var item = liveOptionData[name];
+                        document.getElementById('opttype').value = item.type;
 
-                var item = liveOptionData[name];
-                document.getElementById('opttype').value = item.type;
-
-                var undSelect = document.getElementById('underlying');
-                var ethOpt = undSelect.querySelector('option');
-                if (ethOpt) {
-                    ethOpt.value = item.spot.toString();
-                    ethOpt.textContent = 'ETH · live spot $' + fmtNum(item.spot, 2);
-                }
-                undSelect.value = item.spot.toString();
-
-                var strikePct = Math.round((item.strike / item.spot) * 100);
-                document.getElementById('strike').value = Math.max(50, Math.min(150, strikePct));
-                document.getElementById('prem').value = Math.max(5, Math.min(300, Math.round(item.markUSD)));
-
-                document.getElementById('ob-contract').textContent = item.name;
-                document.getElementById('ob-mark').textContent = '$' + fmtNum(item.markUSD, 2);
-                document.getElementById('ob-iv').textContent = item.iv;
-                document.getElementById('ob-bidask').textContent = '$' + fmtNum(item.bidUSD, 2) + ' / $' + fmtNum(item.askUSD, 2);
-
-                if (typeof recalc === 'function') recalc();
-            }
-
-            async function fetchLiveEthPrice() {
-                try {
-                    var res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd');
-                    var data = await res.json();
-                    if (data && data.ethereum && data.ethereum.usd) {
-                        var ethPrice = data.ethereum.usd;
-                        var ethOpt = document.querySelector('#underlying option[value="3200"]');
+                        var undSelect = document.getElementById('underlying');
+                        var ethOpt = undSelect.querySelector('option');
                         if (ethOpt) {
-                            ethOpt.value = ethPrice.toString();
-                            ethOpt.textContent = 'ETH · live spot $' + fmtNum(ethPrice, 2);
-                            if (typeof recalc === 'function') recalc();
+                            ethOpt.value = item.spot.toString();
+                            ethOpt.textContent = 'ETH · live spot $' + fmtNum(item.spot, 2);
+                        }
+                        undSelect.value = item.spot.toString();
+
+                        var strikePct = Math.round((item.strike / item.spot) * 100);
+                        document.getElementById('strike').value = Math.max(50, Math.min(150, strikePct));
+                        document.getElementById('prem').value = Math.max(5, Math.min(300, Math.round(item.markUSD)));
+
+                        document.getElementById('ob-contract').textContent = item.name;
+                        document.getElementById('ob-mark').textContent = '$' + fmtNum(item.markUSD, 2);
+                        document.getElementById('ob-iv').textContent = item.iv;
+                        document.getElementById('ob-bidask').textContent = '$' + fmtNum(item.bidUSD, 2) + ' / $' + fmtNum(item.askUSD, 2);
+
+                        if (typeof recalc === 'function') recalc();
+                    }
+
+                    async function fetchLiveEthPrice() {
+                        try {
+                            var res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd');
+                            var data = await res.json();
+                            if (data && data.ethereum && data.ethereum.usd) {
+                                var ethPrice = data.ethereum.usd;
+                                var ethOpt = document.querySelector('#underlying option[value="3200"]');
+                                if (ethOpt) {
+                                    ethOpt.value = ethPrice.toString();
+                                    ethOpt.textContent = 'ETH · live spot $' + fmtNum(ethPrice, 2);
+                                    if (typeof recalc === 'function') recalc();
+                                }
+                            }
+                        } catch (e) {
+                            console.log('Live price fetch fallback used static value');
                         }
                     }
-                } catch (e) {
-                    console.log('Live price fetch fallback used static value');
-                }
-            }
 
-            async function promptCustomAddress() {
-                var input = prompt('Enter an Ethereum wallet address to read live balances (e.g. 0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045):', address || '');
-                if (input && ethers.utils.isAddress(input.trim())) {
-                    address = input.trim();
-                    isWalletConnected = true;
-                    document.getElementById('lg-addr').textContent = address;
-                    connectbtn.textContent = 'Address Set';
-                    statustext.textContent = '● LIVE MAINNET — reading address (' + address.slice(0, 6) + '…' + address.slice(-4) + ')';
-                    await loadData();
-                } else if (input) {
-                    alert('Invalid Ethereum address format.');
-                }
-            }
-
-            async function connect() {
-                if (typeof window.ethereum === 'undefined') {
-                    var userChoice = confirm('MetaMask / Web3 wallet extension is not detected in this browser window.\n\nWould you like to manually enter an Ethereum wallet address to view its live balance via public RPC?');
-                    if (userChoice) {
-                        await promptCustomAddress();
-                    } else {
-                        statustext.textContent = '● public RPC active — install MetaMask or click "Enter wallet address"';
-                    }
-                    return;
-                }
-                try {
-                    statustext.textContent = 'requesting wallet connection…';
-                    var web3Provider = new ethers.providers.Web3Provider(window.ethereum);
-                    await web3Provider.send('eth_requestAccounts', []);
-                    walletSigner = web3Provider.getSigner();
-                    address = await walletSigner.getAddress();
-                    provider = web3Provider;
-                    isWalletConnected = true;
-
-                    document.getElementById('lg-addr').textContent = address;
-                    connectbtn.textContent = 'Wallet Connected';
-                    connectbtn.disabled = true;
-                    await loadData();
-                    statustext.textContent = '● LIVE MAINNET — wallet connected (' + address.slice(0, 6) + '…' + address.slice(-4) + ')';
-                } catch (e) {
-                    statustext.textContent = '● wallet error: ' + (e && e.message ? e.message.slice(0, 60) : 'rejected') + ' (public RPC still connected)';
-                }
-            }
-
-            async function loadData() {
-                if (!provider) provider = getRpcProvider();
-
-                var successCount = 0;
-                var currentBlockNum = '—';
-
-                // 1. Network Name
-                try {
-                    var net = await provider.getNetwork();
-                    var netName = net.chainId === 1 ? 'Ethereum Mainnet' : net.name;
-                    document.getElementById('s-net').textContent = netName + ' (chainId ' + net.chainId + ')';
-                    successCount++;
-                } catch (e) {
-                    document.getElementById('s-net').textContent = 'Ethereum Mainnet (1)';
-                }
-
-                // 2. Block Number
-                try {
-                    var block = await provider.getBlockNumber();
-                    currentBlockNum = fmtNum(block, 0);
-                    document.getElementById('s-block').textContent = currentBlockNum;
-                    successCount++;
-                } catch (e) {
-                    document.getElementById('s-block').textContent = 'loading…';
-                }
-
-                // 3. Gas Price
-                try {
-                    var feeData = await provider.getFeeData();
-                    var gwei = feeData && feeData.gasPrice ? ethers.utils.formatUnits(feeData.gasPrice, 'gwei') : null;
-                    document.getElementById('s-gas').textContent = gwei ? fmtNum(gwei, 2) + ' gwei' : '—';
-                    successCount++;
-                } catch (e) {
-                    try {
-                        var gasP = await provider.getGasPrice();
-                        var gwei2 = ethers.utils.formatUnits(gasP, 'gwei');
-                        document.getElementById('s-gas').textContent = fmtNum(gwei2, 2) + ' gwei';
-                        successCount++;
-                    } catch (e2) {
-                        document.getElementById('s-gas').textContent = '—';
-                    }
-                }
-
-                // 4. Wallet ETH Balance
-                if (address && isWalletConnected) {
-                    try {
-                        var bal = await provider.getBalance(address);
-                        document.getElementById('s-bal').textContent = fmtNum(ethers.utils.formatEther(bal), 5) + ' ETH';
-                    } catch (e) {
-                        document.getElementById('s-bal').textContent = '—';
-                    }
-                } else {
-                    document.getElementById('s-bal').textContent = 'connect wallet';
-                }
-
-                // 5. NUTS Token Contract Info
-                try {
-                    var token = new ethers.Contract(NUTS_ADDR, ERC20_ABI, provider);
-                    var nameP = token.name().catch(function () { return 'Thetanuts'; });
-                    var symbolP = token.symbol().catch(function () { return 'NUTS'; });
-                    var name = await nameP;
-                    var symbol = await symbolP;
-                    document.getElementById('lg-tokenmeta').textContent = name + ' (' + symbol + ')';
-
-                    var decimals = await token.decimals().catch(function () { return 18; });
-                    var supply = await token.totalSupply().catch(function () { return null; });
-                    if (supply) {
-                        document.getElementById('lg-supply').textContent = fmtNum(ethers.utils.formatUnits(supply, decimals), 0) + ' NUTS';
-                        successCount++;
-                    } else {
-                        document.getElementById('lg-supply').textContent = '10,000,000,000 NUTS';
+                    async function promptCustomAddress() {
+                        var input = prompt('Enter an Ethereum wallet address to read live balances (e.g. 0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045):', address || '');
+                        if (input && ethers.utils.isAddress(input.trim())) {
+                            address = input.trim();
+                            isWalletConnected = true;
+                            document.getElementById('lg-addr').textContent = address;
+                            connectbtn.textContent = 'Address Set';
+                            statustext.textContent = '● LIVE MAINNET — reading address (' + address.slice(0, 6) + '…' + address.slice(-4) + ')';
+                            await loadData();
+                        } else if (input) {
+                            alert('Invalid Ethereum address format.');
+                        }
                     }
 
-                    if (address && isWalletConnected) {
-                        var mybal = await token.balanceOf(address);
-                        document.getElementById('lg-mybal').textContent = fmtNum(ethers.utils.formatUnits(mybal, decimals), 4) + ' NUTS';
-                    } else {
-                        document.getElementById('lg-mybal').textContent = 'connect wallet';
+                    async function connect() {
+                        if (typeof window.ethereum === 'undefined') {
+                            var userChoice = confirm('MetaMask / Web3 wallet extension is not detected in this browser window.\n\nWould you like to manually enter an Ethereum wallet address to view its live balance via public RPC?');
+                            if (userChoice) {
+                                await promptCustomAddress();
+                            } else {
+                                statustext.textContent = '● public RPC active — install MetaMask or click "Enter wallet address"';
+                            }
+                            return;
+                        }
+                        try {
+                            statustext.textContent = 'requesting wallet connection…';
+                            var web3Provider = new ethers.providers.Web3Provider(window.ethereum);
+                            await web3Provider.send('eth_requestAccounts', []);
+                            walletSigner = web3Provider.getSigner();
+                            address = await walletSigner.getAddress();
+                            provider = web3Provider;
+                            isWalletConnected = true;
+
+                            document.getElementById('lg-addr').textContent = address;
+                            connectbtn.textContent = 'Wallet Connected';
+                            connectbtn.disabled = true;
+                            await loadData();
+                            statustext.textContent = '● LIVE MAINNET — wallet connected (' + address.slice(0, 6) + '…' + address.slice(-4) + ')';
+                        } catch (e) {
+                            statustext.textContent = '● wallet error: ' + (e && e.message ? e.message.slice(0, 60) : 'rejected') + ' (public RPC still connected)';
+                        }
                     }
-                } catch (e) {
-                    document.getElementById('lg-tokenmeta').textContent = 'Thetanuts Governance Token (NUTS)';
-                    document.getElementById('lg-supply').textContent = '10,000,000,000 NUTS';
-                }
 
-                // If RPC failed completely, try next RPC endpoint in list
-                if (successCount === 0 && !isWalletConnected) {
-                    rotateRpcProvider();
-                    statustext.textContent = '● switching RPC endpoint to ' + RPC_ENDPOINTS[currentRpcIdx] + '…';
-                } else if (!isWalletConnected) {
-                    statustext.textContent = '● LIVE MAINNET — connected to ' + RPC_ENDPOINTS[currentRpcIdx].replace('https://', '') + ' (block #' + currentBlockNum + ')';
-                }
-            }
+                    async function loadData() {
+                        if (!provider) provider = getRpcProvider();
 
-            connectbtn.addEventListener('click', connect);
-            customaddrbtn.addEventListener('click', promptCustomAddress);
-            document.getElementById('optcontract').addEventListener('change', function (e) { applyOptionContract(e.target.value); });
-            refreshbtn.addEventListener('click', function () {
-                statustext.textContent = 'refreshing…';
-                loadData().then(function () { statustext.textContent = 'live data refreshed'; });
-            });
+                        var successCount = 0;
+                        var currentBlockNum = '—';
 
-            // ---- financial model (unchanged logic, original) ----
-            var elType = document.getElementById('opttype');
-            var elUnderlying = document.getElementById('underlying');
-            var elStrike = document.getElementById('strike');
-            var elPrem = document.getElementById('prem');
-            var elSize = document.getElementById('size');
-            var elGas = document.getElementById('gasf');
+                        // 1. Network Name
+                        try {
+                            var net = await provider.getNetwork();
+                            var netName = net.chainId === 1 ? 'Ethereum Mainnet' : net.name;
+                            document.getElementById('s-net').textContent = netName + ' (chainId ' + net.chainId + ')';
+                            successCount++;
+                        } catch (e) {
+                            document.getElementById('s-net').textContent = 'Ethereum Mainnet (1)';
+                        }
 
-            function fmt(n) { return n.toLocaleString('en-US', { maximumFractionDigits: 2, minimumFractionDigits: 2 }); }
+                        // 2. Block Number
+                        try {
+                            var block = await provider.getBlockNumber();
+                            currentBlockNum = fmtNum(block, 0);
+                            document.getElementById('s-block').textContent = currentBlockNum;
+                            successCount++;
+                        } catch (e) {
+                            document.getElementById('s-block').textContent = 'loading…';
+                        }
 
-            function recalc() {
-                var spot = parseFloat(elUnderlying.value);
-                var strikePct = parseFloat(elStrike.value) / 100;
-                var strike = spot * strikePct;
-                var prem = parseFloat(elPrem.value);
-                var size = parseFloat(elSize.value);
-                var gas = parseFloat(elGas.value);
-                var type = elType.value;
+                        // 3. Gas Price
+                        try {
+                            var feeData = await provider.getFeeData();
+                            var gwei = feeData && feeData.gasPrice ? ethers.utils.formatUnits(feeData.gasPrice, 'gwei') : null;
+                            document.getElementById('s-gas').textContent = gwei ? fmtNum(gwei, 2) + ' gwei' : '—';
+                            successCount++;
+                        } catch (e) {
+                            try {
+                                var gasP = await provider.getGasPrice();
+                                var gwei2 = ethers.utils.formatUnits(gasP, 'gwei');
+                                document.getElementById('s-gas').textContent = fmtNum(gwei2, 2) + ' gwei';
+                                successCount++;
+                            } catch (e2) {
+                                document.getElementById('s-gas').textContent = '—';
+                            }
+                        }
 
-                document.getElementById('strikeout').textContent = '$' + fmt(strike);
-                document.getElementById('premout').textContent = '$' + fmt(prem);
-                document.getElementById('sizeout').textContent = size.toFixed(1);
-                document.getElementById('gasout').textContent = '$' + fmt(gas);
+                        // 4. Wallet ETH Balance
+                        if (address && isWalletConnected) {
+                            try {
+                                var bal = await provider.getBalance(address);
+                                document.getElementById('s-bal').textContent = fmtNum(ethers.utils.formatEther(bal), 5) + ' ETH';
+                            } catch (e) {
+                                document.getElementById('s-bal').textContent = '—';
+                            }
+                        } else {
+                            document.getElementById('s-bal').textContent = 'connect wallet';
+                        }
 
-                var totalCost = prem * size + gas;
-                var payoffAtSpot = type === 'call' ? Math.max(spot - strike, 0) : Math.max(strike - spot, 0);
-                var pnlAtSpot = payoffAtSpot * size - totalCost;
-                var breakeven = type === 'call' ? strike + (prem + gas / size) : strike - (prem + gas / size);
-                var maxLoss = -totalCost;
-                var roi = (pnlAtSpot / totalCost) * 100;
+                        // 5. NUTS Token Contract Info
+                        try {
+                            var token = new ethers.Contract(NUTS_ADDR, ERC20_ABI, provider);
+                            var nameP = token.name().catch(function () { return 'Thetanuts'; });
+                            var symbolP = token.symbol().catch(function () { return 'NUTS'; });
+                            var name = await nameP;
+                            var symbol = await symbolP;
+                            document.getElementById('lg-tokenmeta').textContent = name + ' (' + symbol + ')';
 
-                document.getElementById('s-be').textContent = '$' + fmt(breakeven);
-                document.getElementById('s-loss').textContent = '-$' + fmt(Math.abs(maxLoss));
-                var pnlEl = document.getElementById('s-pnl');
-                pnlEl.textContent = (pnlAtSpot >= 0 ? '+' : '-') + '$' + fmt(Math.abs(pnlAtSpot));
-                pnlEl.className = 'v ' + (pnlAtSpot >= 0 ? 'pos' : 'neg');
-                var roiEl = document.getElementById('s-roi');
-                roiEl.textContent = (roi >= 0 ? '+' : '') + roi.toFixed(1) + '%';
-                roiEl.className = 'v ' + (roi >= 0 ? 'pos' : 'neg');
+                            var decimals = await token.decimals().catch(function () { return 18; });
+                            var supply = await token.totalSupply().catch(function () { return null; });
+                            if (supply) {
+                                document.getElementById('lg-supply').textContent = fmtNum(ethers.utils.formatUnits(supply, decimals), 0) + ' NUTS';
+                                successCount++;
+                            } else {
+                                document.getElementById('lg-supply').textContent = '10,000,000,000 NUTS';
+                            }
 
-                drawChart(spot, strike, prem, size, gas, type);
-            }
+                            if (address && isWalletConnected) {
+                                var mybal = await token.balanceOf(address);
+                                document.getElementById('lg-mybal').textContent = fmtNum(ethers.utils.formatUnits(mybal, decimals), 4) + ' NUTS';
+                            } else {
+                                document.getElementById('lg-mybal').textContent = 'connect wallet';
+                            }
+                        } catch (e) {
+                            document.getElementById('lg-tokenmeta').textContent = 'Thetanuts Governance Token (NUTS)';
+                            document.getElementById('lg-supply').textContent = '10,000,000,000 NUTS';
+                        }
 
-            function drawChart(spot, strike, prem, size, gas, type) {
-                var svg = document.getElementById('pnlchart');
-                var W = 600, H = 180, pad = 20;
-                var lo = spot * 0.5, hi = spot * 1.5;
-                var totalCost = prem * size + gas;
-                var pts = [], minPnl = Infinity, maxPnl = -Infinity, N = 60;
-                for (var i = 0; i <= N; i++) {
-                    var s = lo + (hi - lo) * i / N;
-                    var payoff = type === 'call' ? Math.max(s - strike, 0) : Math.max(strike - s, 0);
-                    var pnl = payoff * size - totalCost;
-                    pts.push([s, pnl]);
-                    if (pnl < minPnl) minPnl = pnl;
-                    if (pnl > maxPnl) maxPnl = pnl;
-                }
-                if (minPnl === maxPnl) { minPnl -= 1; maxPnl += 1; }
-                var range = maxPnl - minPnl;
-                function X(s) { return pad + (s - lo) / (hi - lo) * (W - 2 * pad); }
-                function Y(p) { return H - pad - (p - minPnl) / range * (H - 2 * pad); }
-                var zeroY = Y(0);
-                var path = pts.map(function (p, i) { return (i === 0 ? 'M' : 'L') + X(p[0]).toFixed(1) + ',' + Y(p[1]).toFixed(1); }).join(' ');
-                var spotX = X(spot);
-                var svgns = 'http://www.w3.org/2000/svg';
-                svg.innerHTML = '';
-                var zero = document.createElementNS(svgns, 'line');
-                zero.setAttribute('x1', pad); zero.setAttribute('x2', W - pad); zero.setAttribute('y1', zeroY); zero.setAttribute('y2', zeroY);
-                zero.setAttribute('stroke', '#333D2C'); zero.setAttribute('stroke-dasharray', '3,3');
-                svg.appendChild(zero);
-                var spotLine = document.createElementNS(svgns, 'line');
-                spotLine.setAttribute('x1', spotX); spotLine.setAttribute('x2', spotX); spotLine.setAttribute('y1', pad); spotLine.setAttribute('y2', H - pad);
-                spotLine.setAttribute('stroke', '#6B7565'); spotLine.setAttribute('stroke-dasharray', '2,3');
-                svg.appendChild(spotLine);
-                var curve = document.createElementNS(svgns, 'path');
-                curve.setAttribute('d', path); curve.setAttribute('fill', 'none'); curve.setAttribute('stroke', '#97C459'); curve.setAttribute('stroke-width', '2');
-                svg.appendChild(curve);
-                var lbl = document.createElementNS(svgns, 'text');
-                lbl.setAttribute('x', spotX + 4); lbl.setAttribute('y', pad + 10); lbl.setAttribute('fill', '#9CA997'); lbl.setAttribute('font-size', '10'); lbl.setAttribute('font-family', 'monospace');
-                lbl.textContent = 'spot';
-                svg.appendChild(lbl);
-            }
+                        // If RPC failed completely, try next RPC endpoint in list
+                        if (successCount === 0 && !isWalletConnected) {
+                            rotateRpcProvider();
+                            statustext.textContent = '● switching RPC endpoint to ' + RPC_ENDPOINTS[currentRpcIdx] + '…';
+                        } else if (!isWalletConnected) {
+                            statustext.textContent = '● LIVE MAINNET — connected to ' + RPC_ENDPOINTS[currentRpcIdx].replace('https://', '') + ' (block #' + currentBlockNum + ')';
+                        }
+                    }
 
-            [elType, elUnderlying, elStrike, elPrem, elSize, elGas].forEach(function (el) { el.addEventListener('input', recalc); });
-            recalc();
-            initAutoConnect();
-        })();
-    </script>
-</body>
+                    connectbtn.addEventListener('click', connect);
+                    customaddrbtn.addEventListener('click', promptCustomAddress);
+                    document.getElementById('optcontract').addEventListener('change', function (e) { applyOptionContract(e.target.value); });
+                    refreshbtn.addEventListener('click', function () {
+                        statustext.textContent = 'refreshing…';
+                        loadData().then(function () { statustext.textContent = 'live data refreshed'; });
+                    });
 
-</html>
+                    // ---- financial model (unchanged logic, original) ----
+                    var elType = document.getElementById('opttype');
+                    var elUnderlying = document.getElementById('underlying');
+                    var elStrike = document.getElementById('strike');
+                    var elPrem = document.getElementById('prem');
+                    var elSize = document.getElementById('size');
+                    var elGas = document.getElementById('gasf');
+
+                    function fmt(n) { return n.toLocaleString('en-US', { maximumFractionDigits: 2, minimumFractionDigits: 2 }); }
+
+                    function recalc() {
+                        var spot = parseFloat(elUnderlying.value);
+                        var strikePct = parseFloat(elStrike.value) / 100;
+                        var strike = spot * strikePct;
+                        var prem = parseFloat(elPrem.value);
+                        var size = parseFloat(elSize.value);
+                        var gas = parseFloat(elGas.value);
+                        var type = elType.value;
+
+                        document.getElementById('strikeout').textContent = '$' + fmt(strike);
+                        document.getElementById('premout').textContent = '$' + fmt(prem);
+                        document.getElementById('sizeout').textContent = size.toFixed(1);
+                        document.getElementById('gasout').textContent = '$' + fmt(gas);
+
+                        var totalCost = prem * size + gas;
+                        var payoffAtSpot = type === 'call' ? Math.max(spot - strike, 0) : Math.max(strike - spot, 0);
+                        var pnlAtSpot = payoffAtSpot * size - totalCost;
+                        var breakeven = type === 'call' ? strike + (prem + gas / size) : strike - (prem + gas / size);
+                        var maxLoss = -totalCost;
+                        var roi = (pnlAtSpot / totalCost) * 100;
+
+                        document.getElementById('s-be').textContent = '$' + fmt(breakeven);
+                        document.getElementById('s-loss').textContent = '-$' + fmt(Math.abs(maxLoss));
+                        var pnlEl = document.getElementById('s-pnl');
+                        pnlEl.textContent = (pnlAtSpot >= 0 ? '+' : '-') + '$' + fmt(Math.abs(pnlAtSpot));
+                        pnlEl.className = 'v ' + (pnlAtSpot >= 0 ? 'pos' : 'neg');
+                        var roiEl = document.getElementById('s-roi');
+                        roiEl.textContent = (roi >= 0 ? '+' : '') + roi.toFixed(1) + '%';
+                        roiEl.className = 'v ' + (roi >= 0 ? 'pos' : 'neg');
+
+                        drawChart(spot, strike, prem, size, gas, type);
+                    }
+
+                    function drawChart(spot, strike, prem, size, gas, type) {
+                        var svg = document.getElementById('pnlchart');
+                        var W = 600, H = 180, pad = 20;
+                        var lo = spot * 0.5, hi = spot * 1.5;
+                        var totalCost = prem * size + gas;
+                        var pts = [], minPnl = Infinity, maxPnl = -Infinity, N = 60;
+                        for (var i = 0; i <= N; i++) {
+                            var s = lo + (hi - lo) * i / N;
+                            var payoff = type === 'call' ? Math.max(s - strike, 0) : Math.max(strike - s, 0);
+                            var pnl = payoff * size - totalCost;
+                            pts.push([s, pnl]);
+                            if (pnl < minPnl) minPnl = pnl;
+                            if (pnl > maxPnl) maxPnl = pnl;
+                        }
+                        if (minPnl === maxPnl) { minPnl -= 1; maxPnl += 1; }
+                        var range = maxPnl - minPnl;
+                        function X(s) { return pad + (s - lo) / (hi - lo) * (W - 2 * pad); }
+                        function Y(p) { return H - pad - (p - minPnl) / range * (H - 2 * pad); }
+                        var zeroY = Y(0);
+                        var path = pts.map(function (p, i) { return (i === 0 ? 'M' : 'L') + X(p[0]).toFixed(1) + ',' + Y(p[1]).toFixed(1); }).join(' ');
+                        var spotX = X(spot);
+                        var svgns = 'http://www.w3.org/2000/svg';
+                        svg.innerHTML = '';
+                        var zero = document.createElementNS(svgns, 'line');
+                        zero.setAttribute('x1', pad); zero.setAttribute('x2', W - pad); zero.setAttribute('y1', zeroY); zero.setAttribute('y2', zeroY);
+                        zero.setAttribute('stroke', '#333D2C'); zero.setAttribute('stroke-dasharray', '3,3');
+                        svg.appendChild(zero);
+                        var spotLine = document.createElementNS(svgns, 'line');
+                        spotLine.setAttribute('x1', spotX); spotLine.setAttribute('x2', spotX); spotLine.setAttribute('y1', pad); spotLine.setAttribute('y2', H - pad);
+                        spotLine.setAttribute('stroke', '#6B7565'); spotLine.setAttribute('stroke-dasharray', '2,3');
+                        svg.appendChild(spotLine);
+                        var curve = document.createElementNS(svgns, 'path');
+                        curve.setAttribute('d', path); curve.setAttribute('fill', 'none'); curve.setAttribute('stroke', '#97C459'); curve.setAttribute('stroke-width', '2');
+                        svg.appendChild(curve);
+                        var lbl = document.createElementNS(svgns, 'text');
+                        lbl.setAttribute('x', spotX + 4); lbl.setAttribute('y', pad + 10); lbl.setAttribute('fill', '#9CA997'); lbl.setAttribute('font-size', '10'); lbl.setAttribute('font-family', 'monospace');
+                        lbl.textContent = 'spot';
+                        svg.appendChild(lbl);
+                    }
+
+                    [elType, elUnderlying, elStrike, elPrem, elSize, elGas].forEach(function (el) { el.addEventListener('input', recalc); });
+                    recalc();
+                    initAutoConnect();
+                })();
+            </script>
+        </body>
+
+        </html>
