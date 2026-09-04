@@ -543,6 +543,39 @@
                     </div>
                 </div>
 
+                <p class="section-label" style="margin-top: 26px;">04 &middot; AI Option Assistant &amp; Strategy Advisor (AI x Options)</p>
+                <div class="model" style="border-color: var(--line2);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 8px;">
+                        <span style="font-family: var(--mono); font-size: 12px; color: var(--lime); font-weight: bold;">🤖 AI Strategy Engine Active</span>
+                        <div style="display: flex; gap: 8px;">
+                            <button id="ai-btn-risk" style="padding: 4px 10px; font-size: 11px;">⚡ Risk Analysis</button>
+                            <button id="ai-btn-pop" style="padding: 4px 10px; font-size: 11px;">📊 Probability (POP)</button>
+                            <button id="ai-btn-opt" style="padding: 4px 10px; font-size: 11px;">🔮 Optimal Strategy</button>
+                        </div>
+                    </div>
+                    <div class="stats2" style="margin-top: 0; margin-bottom: 14px;">
+                        <div class="stat2">
+                            <div class="l">AI Strategy Rating</div>
+                            <div class="v" id="ai-rating" style="font-size: 13px; color: var(--limel);">BULLISH SPREAD</div>
+                        </div>
+                        <div class="stat2">
+                            <div class="l">Est. Win Rate (POP)</div>
+                            <div class="v pos" id="ai-pop">62.4%</div>
+                        </div>
+                        <div class="stat2">
+                            <div class="l">Risk / Reward Score</div>
+                            <div class="v" id="ai-risk">2.8 / 5.0</div>
+                        </div>
+                        <div class="stat2">
+                            <div class="l">IV Assessment</div>
+                            <div class="v" id="ai-volrank" style="font-size: 13px; color: var(--coral);">ELEVATED</div>
+                        </div>
+                    </div>
+                    <div id="ai-insights-box" style="background: var(--card2); border: 1px solid var(--line2); border-radius: 8px; padding: 14px; font-family: var(--mono); font-size: 12px; line-height: 1.6; color: var(--ink);">
+                        Analyzing contract data… Select an option contract above to generate automated AI tactical insights, entry parameters, and risk/reward scoring.
+                    </div>
+                </div>
+
             </div>
 
             <script>
@@ -701,6 +734,50 @@
                         document.getElementById('ob-bidask').textContent = '$' + fmtNum(item.bidUSD, 2) + ' / $' + fmtNum(item.askUSD, 2);
 
                         if (typeof recalc === 'function') recalc();
+                        runAiOptionAnalysis('default');
+                    }
+
+                    function runAiOptionAnalysis(mode) {
+                        var selectVal = document.getElementById('optcontract').value;
+                        var item = liveOptionData[selectVal];
+
+                        var spot = parseFloat(document.getElementById('underlying').value) || 3300;
+                        var type = document.getElementById('opttype').value;
+                        var strikePct = parseFloat(document.getElementById('strike').value) / 100;
+                        var strike = spot * strikePct;
+                        var prem = parseFloat(document.getElementById('prem').value);
+
+                        var ivVal = (item && item.iv && item.iv !== 'N/A') ? parseFloat(item.iv) : 54.2;
+                        var isCall = type === 'call';
+                        var diffPct = ((strike - spot) / spot) * 100;
+
+                        var pop = isCall ? Math.max(15, Math.min(88, 50 - diffPct * 1.8)) : Math.max(15, Math.min(88, 50 + diffPct * 1.8));
+                        var riskScore = (prem / (spot * 0.05) + ivVal / 50).toFixed(1);
+                        riskScore = Math.max(1.0, Math.min(5.0, riskScore));
+
+                        var rating = 'NEUTRAL';
+                        if (pop > 60 && parseFloat(riskScore) < 3.5) rating = isCall ? 'BULLISH CALL' : 'BEARISH PUT';
+                        else if (pop <= 45) rating = 'HIGH RISK';
+                        else rating = 'NEUTRAL SPREAD';
+
+                        var ivStatus = ivVal > 60 ? 'HIGH IV' : (ivVal < 40 ? 'LOW IV' : 'MODERATE IV');
+
+                        document.getElementById('ai-rating').textContent = rating;
+                        document.getElementById('ai-pop').textContent = pop.toFixed(1) + '%';
+                        document.getElementById('ai-risk').textContent = riskScore + ' / 5.0';
+                        document.getElementById('ai-volrank').textContent = ivStatus + ' (' + ivVal.toFixed(1) + '%)';
+
+                        var box = document.getElementById('ai-insights-box');
+
+                        if (mode === 'risk') {
+                            box.innerHTML = '⚡ <b>AI Risk Assessment</b>: Risk/Reward score is <b>' + riskScore + '/5.0</b> with Implied Volatility at <b>' + ivVal.toFixed(1) + '%</b>. Position downside is capped strictly at total premium paid ($' + fmtNum(prem, 2) + ').';
+                        } else if (mode === 'pop') {
+                            box.innerHTML = '📊 <b>AI Probability Engine</b>: Estimated Probability of Profit (POP) is <b>' + pop.toFixed(1) + '%</b> based on spot $' + fmtNum(spot, 2) + ' vs strike $' + fmtNum(strike, 2) + '. Break-even point is <b>$' + fmtNum(isCall ? strike + prem : strike - prem, 2) + '</b>.';
+                        } else if (mode === 'opt') {
+                            box.innerHTML = '🔮 <b>AI Strategy Optimization</b>: ' + (ivVal > 50 ? 'High Implied Volatility detected. Consider selling a credit spread or covered call to offset option decay.' : 'Low Implied Volatility detected. Outright option purchase offers favorable asymmetry with low time decay penalty.');
+                        } else {
+                            box.innerHTML = '🤖 <b>AI Tactical Recommendation</b>: Selected ' + (item ? item.name : (type.toUpperCase() + ' $' + fmtNum(strike, 0))) + '. Estimated Win Rate is <b>' + pop.toFixed(1) + '%</b>. ' + (isCall ? 'Spot needs to rise above $' + fmtNum(strike + prem, 2) + ' for net profit.' : 'Spot needs to fall below $' + fmtNum(strike - prem, 2) + ' for net profit.');
+                        }
                     }
 
                     async function fetchLiveEthPrice() {
@@ -864,6 +941,10 @@
                         statustext.textContent = 'refreshing…';
                         loadData().then(function () { statustext.textContent = 'live data refreshed'; });
                     });
+
+                    document.getElementById('ai-btn-risk').addEventListener('click', function () { runAiOptionAnalysis('risk'); });
+                    document.getElementById('ai-btn-pop').addEventListener('click', function () { runAiOptionAnalysis('pop'); });
+                    document.getElementById('ai-btn-opt').addEventListener('click', function () { runAiOptionAnalysis('opt'); });
 
                     // ---- financial model (unchanged logic, original) ----
                     var elType = document.getElementById('opttype');
